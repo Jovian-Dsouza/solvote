@@ -37,5 +37,5 @@ pub struct UserDao {
 #[account]
 #[derive(InitSpace)]
 pub struct UserVote { //Derived with user key and proposal id
-    pub vote: Option<bool>, 
+    pub vote: Option<u64>, 
 }
