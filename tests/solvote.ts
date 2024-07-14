@@ -132,4 +132,44 @@ describe("solvote", () => {
     const userVote = await program.account.userVote.fetch(userVotePDA);
     assert.ok(userVote.vote.toNumber() === optionIndex);
   });
+
+  it("Fails to vote with an invalid option index!", async () => {
+    const proposalId = 0; // Assuming this is the first proposal
+    const invalidOptionIndex = 3; // Invalid option index
+
+    try {
+      // Attempt to cast a vote with an invalid option index.
+      await program.methods
+        .vote(new anchor.BN(proposalId), new anchor.BN(invalidOptionIndex))
+        .accounts({
+          dao: daoAccount.publicKey,
+          user: user.publicKey,
+        })
+        .rpc();
+
+      assert.fail("Expected an error to be thrown due to invalid option index");
+    } catch (err) {
+      assert.equal(err.error.errorCode.code, "InvalidOption");
+    }
+  });
+
+  it("Fails to vote more than once on a proposal!", async () => {
+    const proposalId = 0; // Assuming this is the first proposal
+    const optionIndex = 0; // Voting for "Option 1"
+
+    try {
+      // Attempt to cast a second vote on the same proposal.
+      await program.methods
+        .vote(new anchor.BN(proposalId), new anchor.BN(optionIndex))
+        .accounts({
+          dao: daoAccount.publicKey,
+          user: user.publicKey,
+        })
+        .rpc();
+
+      assert.fail("Expected an error to be thrown due to already voted");
+    } catch (err) {
+      assert.equal(err.error.errorCode.code, "AlreadyVoted");
+    }
+  });
 });
